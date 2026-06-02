@@ -1,9 +1,10 @@
 from flask import Flask, request
-
+import os
 import anthropic
 
 app = Flask(__name__)
-client = anthropic.Anthropic(api_key="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")
+
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 system = """Eres Checkmate, un asistente que verifica si remedios, suplementos o medicamentos tienen respaldo científico real.
 Tu tono: casual pero confiable. Como ese amigo que estudió medicina o nutrición y te habla sin rollos, pero tampoco te dice tonterías. Directo, honesto, sin alarmismo.
