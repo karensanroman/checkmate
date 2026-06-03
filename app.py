@@ -1,6 +1,7 @@
 from flask import Flask, request
-import os
 import anthropic
+import os
+from twilio.twiml.messaging_response import MessagingResponse
 
 app = Flask(__name__)
 
@@ -21,25 +22,38 @@ Tu respuesta debe de contener:
 3. Conclusión práctica
 4. Si aplica, cuándo sí vale la pena consumirlo y cuándo no"""
 
+historial_usuarios = {}
+
 @app.route("/checkmate", methods=["POST"])
 def checkmate():
-    datos = request.json
-    mensaje = datos.get("mensaje", "")
-    historial = datos.get("historial", [])
-    
-    historial.append({"role": "user", "content": mensaje})
-    
+    mensaje_entrante = request.form.get("Body", "")
+    numero_usuario = request.form.get("From", "")
+
+    if numero_usuario not in historial_usuarios:
+        historial_usuarios[numero_usuario] = []
+
+    historial_usuarios[numero_usuario].append({
+        "role": "user",
+        "content": mensaje_entrante
+    })
+
     respuesta = client.messages.create(
         model="claude-opus-4-5",
         max_tokens=1024,
         system=system,
-        messages=historial
+        messages=historial_usuarios[numero_usuario]
     )
-    
-    respuesta_checkmate = respuesta.content[0].text
-    historial.append({"role": "assistant", "content": respuesta_checkmate})
-    
-    return {"respuesta": respuesta_checkmate, "historial": historial}
+
+    mensaje_checkmate = respuesta.content[0].text
+
+    historial_usuarios[numero_usuario].append({
+        "role": "assistant",
+        "content": mensaje_checkmate
+    })
+
+    resp = MessagingResponse()
+    resp.message(mensaje_checkmate)
+    return str(resp)
 
 if __name__ == "__main__":
     app.run(debug=True)
