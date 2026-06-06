@@ -1,6 +1,8 @@
 from flask import Flask, request
 import anthropic
 import os
+import requests
+import base64
 from twilio.twiml.messaging_response import MessagingResponse
 
 app = Flask(__name__)
@@ -22,19 +24,55 @@ Tu respuesta debe de contener:
 3. Conclusión práctica
 4. Si aplica, cuándo sí vale la pena consumirlo y cuándo no"""
 
+
 historial_usuarios = {}
+
+def descargar_imagen_base64(url, twilio_sid, twilio_token):
+    respuesta = requests.get(url, auth=(twilio_sid, twilio_token))
+    tipo = respuesta.headers.get("Content-Type", "image/jpeg")
+    imagen_base64 = base64.b64encode(respuesta.content).decode("utf-8")
+    return imagen_base64, tipo
 
 @app.route("/checkmate", methods=["POST"])
 def checkmate():
-    mensaje_entrante = request.form.get("Body", "")
+    mensaje_entrante = request.form.get("Body", "").strip()
     numero_usuario = request.form.get("From", "")
+    num_media = int(request.form.get("NumMedia", 0))
+
+    twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+    twilio_token = os.environ.get("TWILIO_AUTH_TOKEN")
 
     if numero_usuario not in historial_usuarios:
         historial_usuarios[numero_usuario] = []
 
+    contenido_mensaje = []
+
+    if num_media > 0:
+        url_imagen = request.form.get("MediaUrl0", "")
+        imagen_base64, tipo_imagen = descargar_imagen_base64(url_imagen, twilio_sid, twilio_token)
+        contenido_mensaje.append({
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": tipo_imagen,
+                "data": imagen_base64
+            }
+        })
+
+    if mensaje_entrante:
+        contenido_mensaje.append({
+            "type": "text",
+            "text": mensaje_entrante
+        })
+    elif num_media > 0:
+        contenido_mensaje.append({
+            "type": "text",
+            "text": "Analiza este producto y dime qué tan confiable es su consumo."
+        })
+
     historial_usuarios[numero_usuario].append({
         "role": "user",
-        "content": mensaje_entrante
+        "content": contenido_mensaje
     })
 
     respuesta = client.messages.create(
