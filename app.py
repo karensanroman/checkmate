@@ -23,19 +23,20 @@ Tu respuesta debe de contener:
 1. Un respaldo de evidencia científica del consumo del producto, porcentaje de confiabilidad de su consumo.
 2. Lo que dicen los estudios (a favor y/o limitaciones)
 3. Conclusión práctica
-4. Si aplica, cuándo sí vale la pena consumirlo y cuándo no"""
+4. Si aplica, cuándo sí vale la pena consumirlo y cuándo no
+- Solo usa las herramientas de búsqueda cuando sea estrictamente necesario. Para preguntas simples responde directo con lo que sabes."""
 
 
 herramientas = [
     {
         "name": "buscar_pubmed",
-        "description": "Busca estudios científicos reales en PubMed sobre un ingrediente, suplemento o medicamento. Úsala siempre para respaldar tu análisis con evidencia actual.",
+        "description": "Busca estudios científicos en PubMed. Úsala SOLO cuando el usuario pregunte específicamente por evidencia científica o estudios. NO la uses para preguntas simples sobre qué es un suplemento.",
         "input_schema": {
             "type": "object",
             "properties": {
                 "termino": {
                     "type": "string",
-                    "description": "El ingrediente o medicamento a buscar en inglés, ejemplo: magnesium sleep"
+                    "description": "El ingrediente a buscar en inglés, ejemplo: magnesium sleep"
                 }
             },
             "required": ["termino"]
@@ -43,13 +44,13 @@ herramientas = [
     },
     {
         "name": "buscar_openfda",
-        "description": "Busca información oficial de la FDA sobre medicamentos: efectos adversos, alertas de seguridad, contraindicaciones. Úsala para medicamentos específicos.",
+        "description": "Busca alertas y efectos adversos oficiales en FDA. Úsala SOLO para medicamentos con receta o cuando el usuario pregunte por efectos secundarios específicos.",
         "input_schema": {
             "type": "object",
             "properties": {
                 "medicamento": {
                     "type": "string",
-                    "description": "El nombre del medicamento a buscar, ejemplo: ibuprofen"
+                    "description": "Nombre del medicamento en inglés"
                 }
             },
             "required": ["medicamento"]
