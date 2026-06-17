@@ -45,4 +45,5 @@ PubMed / OpenFDA
 ## Autora
 
 Karen San Roman — Engineering Data Analyst & AI Developer  
-[LinkedIn](https://linkedin.com/in/karensanroman)
+[LinkedIn](https://www.linkedin.com/in/karensanrom%C3%A1n/)
+
