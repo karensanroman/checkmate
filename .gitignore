@@ -1,6 +1,7 @@
 # Variables de entorno
 .env
 *.env
+*.txt
 
 # Archivos con credenciales
 secrets.py
