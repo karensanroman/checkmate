@@ -1,10 +1,12 @@
-from flask import Flask, request
+from flask import Flask, request, render_template, jsonify
 import anthropic
 import os
 import requests
 import base64
 import json
 from twilio.twiml.messaging_response import MessagingResponse
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -188,6 +190,70 @@ def checkmate():
     resp = MessagingResponse()
     resp.message(mensaje_checkmate)
     return str(resp)
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/web", methods=["POST"])
+def web():
+    datos = request.json
+    mensaje_entrante = datos.get("mensaje", "")
+    historial = datos.get("historial", [])
+    imagen_base64 = datos.get("imagen", None)
+
+    contenido_mensaje = []
+
+    if imagen_base64:
+        tipo = "image/jpeg"
+        if "png" in imagen_base64:
+            tipo = "image/png"
+        data = imagen_base64.split(",")[1] if "," in imagen_base64 else imagen_base64
+        contenido_mensaje.append({
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": tipo,
+                "data": data
+            }
+        })
+
+    if mensaje_entrante:
+        contenido_mensaje.append({"type": "text", "text": mensaje_entrante})
+    elif imagen_base64:
+        contenido_mensaje.append({"type": "text", "text": "Analiza este producto y dime qué tan confiable es su consumo."})
+
+    historial.append({"role": "user", "content": contenido_mensaje})
+
+    while True:
+        respuesta = client.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=1024,
+            system=system,
+            tools=herramientas,
+            messages=historial
+        )
+
+        if respuesta.stop_reason == "end_turn":
+            mensaje_checkmate = respuesta.content[0].text
+            break
+
+        if respuesta.stop_reason == "tool_use":
+            historial.append({"role": "assistant", "content": respuesta.content})
+            resultados_herramientas = []
+            for bloque in respuesta.content:
+                if bloque.type == "tool_use":
+                    resultado = ejecutar_herramienta(bloque.name, bloque.input)
+                    resultados_herramientas.append({
+                        "type": "tool_result",
+                        "tool_use_id": bloque.id,
+                        "content": resultado
+                    })
+            historial.append({"role": "user", "content": resultados_herramientas})
+
+    historial.append({"role": "assistant", "content": mensaje_checkmate})
+
+    return {"respuesta": mensaje_checkmate, "historial": historial}
 
 if __name__ == "__main__":
     app.run(debug=True)

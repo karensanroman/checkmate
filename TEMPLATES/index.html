@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkmate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #090909;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        header h1 {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        header span {
+            color: #e94560;
+            font-size: 20px;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .chat-container {
+            flex: 1;
+            max-width: 720px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .mensaje {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+        }
+
+        .mensaje.usuario {
+            align-self: flex-end;
+        }
+
+        .mensaje.checkmate {
+            align-self: flex-start;
+        }
+
+        .burbuja {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .usuario .burbuja {
+            background: #1a1a2e;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .checkmate .burbuja {
+            background: white;
+            color: #1a1a2e;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .nombre {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+            padding: 0 4px;
+        }
+
+        .input-area {
+            background: white;
+            border-top: 1px solid #eee;
+            padding: 16px;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .input-wrapper {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .input-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            min-height: 48px;
+            max-height: 120px;
+        }
+
+        textarea:focus {
+            border-color: #1a1a2e;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-imagen {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .btn-imagen:hover {
+            background: #f5f5f5;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .preview-imagen {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        button[type="submit"] {
+            padding: 12px 24px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        button[type="submit"]:hover {
+            background: #c73652;
+        }
+
+        button[type="submit"]:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .bienvenida {
+            text-align: center;
+            padding: 40px 16px;
+            color: #888;
+        }
+
+        .bienvenida h2 {
+            font-size: 22px;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .bienvenida p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .cargando {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            width: fit-content;
+        }
+
+        .punto {
+            width: 8px;
+            height: 8px;
+            background: #ccc;
+            border-radius: 50%;
+            animation: pulso 1.2s infinite;
+        }
+
+        .punto:nth-child(2) { animation-delay: 0.2s; }
+        .punto:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulso {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>Checkmate <span>✓</span></h1>
+        <div class="subtitle">Verificación de suplementos y medicamentos con evidencia científica</div>
+    </div>
+</header>
+
+<div class="chat-container" id="chat">
+    <div class="bienvenida">
+        <h2>Hola, soy Checkmate 👋</h2>
+        <p>Escríbeme el nombre de un suplemento, remedio o medicamento<br>o súbeme una foto de la etiqueta y te digo qué dice la evidencia.</p>
+    </div>
+</div>
+
+<div class="input-area">
+    <div class="input-wrapper">
+        <div class="input-box">
+            <textarea id="mensaje" placeholder="Pregunta sobre un suplemento o medicamento..." rows="1"></textarea>
+            <div class="acciones">
+                <label for="imagen" class="btn-imagen">📷 Subir imagen</label>
+                <input type="file" id="imagen" accept="image/*">
+                <img id="preview" class="preview-imagen" style="display:none">
+            </div>
+        </div>
+        <button type="submit" id="enviar">Enviar</button>
+    </div>
+</div>
+
+<script>
+    const chat = document.getElementById('chat');
+    const mensajeInput = document.getElementById('mensaje');
+    const imagenInput = document.getElementById('imagen');
+    const preview = document.getElementById('preview');
+    const enviarBtn = document.getElementById('enviar');
+    let historial = [];
+    let imagenBase64 = null;
+
+    imagenInput.addEventListener('change', () => {
+        const archivo = imagenInput.files[0];
+        if (!archivo) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imagenBase64 = e.target.result;
+            preview.src = imagenBase64;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(archivo);
+    });
+
+    enviarBtn.addEventListener('click', enviar);
+    mensajeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            enviar();
+        }
+    });
+
+    async function enviar() {
+        const texto = mensajeInput.value.trim();
+        if (!texto && !imagenBase64) return;
+
+        agregarMensaje('usuario', texto, imagenBase64);
+        mensajeInput.value = '';
+        preview.style.display = 'none';
+        enviarBtn.disabled = true;
+
+        const cargando = agregarCargando();
+
+        try {
+            const res = await fetch('/web', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mensaje: texto,
+                    historial: historial,
+                    imagen: imagenBase64
+                })
+            });
+
+            const data = await res.json();
+            historial = data.historial;
+            cargando.remove();
+            agregarMensaje('checkmate', data.respuesta);
+        } catch (err) {
+            cargando.remove();
+            agregarMensaje('checkmate', 'Hubo un error. Intenta de nuevo.');
+        }
+
+        imagenBase64 = null;
+        imagenInput.value = '';
+        enviarBtn.disabled = false;
+    }
+
+    function agregarMensaje(tipo, texto, imagen) {
+        const bienvenida = document.querySelector('.bienvenida');
+        if (bienvenida) bienvenida.remove();
+
+        const div = document.createElement('div');
+        div.className = `mensaje ${tipo}`;
+
+        const nombre = document.createElement('div');
+        nombre.className = 'nombre';
+        nombre.textContent = tipo === 'usuario' ? 'Tú' : 'Checkmate';
+
+        const burbuja = document.createElement('div');
+        burbuja.className = 'burbuja';
+
+        if (imagen && tipo === 'usuario') {
+            const img = document.createElement('img');
+            img.src = imagen;
+            img.style.cssText = 'max-width:200px;border-radius:8px;display:block;margin-bottom:8px;';
+            burbuja.appendChild(img);
+        }
+
+        if (texto) {
+            const p = document.createElement('div');
+            p.innerHTML = texto
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>');
+            burbuja.appendChild(p);
+        }
+
+        div.appendChild(nombre);
+        div.appendChild(burbuja);
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function agregarCargando() {
+        const div = document.createElement('div');
+        div.className = 'mensaje checkmate';
+        const cargando = document.createElement('div');
+        cargando.className = 'cargando';
+        cargando.innerHTML = '<div class="punto"></div><div class="punto"></div><div class="punto"></div>';
+        div.appendChild(cargando);
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+        return div;
+    }
+</script>
+
+</body>
+</html>
