@@ -251,9 +251,22 @@ def web():
                     })
             historial.append({"role": "user", "content": resultados_herramientas})
 
-    historial.append({"role": "assistant", "content": mensaje_checkmate})
+# Limpiar historial para que sea serializable a JSON
+    historial_limpio = []
+    for msg in historial:
+        if isinstance(msg.get("content"), str):
+            historial_limpio.append(msg)
+        elif isinstance(msg.get("content"), list):
+            textos = []
+            for bloque in msg["content"]:
+                if isinstance(bloque, dict) and bloque.get("type") == "text":
+                    textos.append(bloque["text"])
+            if textos:
+                historial_limpio.append({"role": msg["role"], "content": " ".join(textos)})
 
-    return {"respuesta": mensaje_checkmate, "historial": historial}
+    historial_limpio.append({"role": "assistant", "content": mensaje_checkmate})
+
+    return {"respuesta": mensaje_checkmate, "historial": historial_limpio}
 
 if __name__ == "__main__":
     app.run(debug=True)
