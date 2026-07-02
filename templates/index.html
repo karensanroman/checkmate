@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkmate</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
     <style>
         :root {
             --acento: #C4705A;
@@ -174,7 +175,7 @@
         .chat-container {
             flex: 1;
             overflow-y: auto;
-            padding: 32px 16px;
+            padding: 60px 16px 32px;
             display: none;
             flex-direction: column;
             gap: 16px;
@@ -212,6 +213,51 @@
             color: var(--texto);
             border-bottom-left-radius: 4px;
             box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+        }
+
+        /* ESTILOS PARA MARKDOWN RENDERIZADO */
+        .burbuja h1, .burbuja h2, .burbuja h3, .burbuja h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 12px 0 6px;
+            color: var(--texto);
+        }
+
+        .checkmate .burbuja h1:first-child,
+        .checkmate .burbuja h2:first-child,
+        .checkmate .burbuja h3:first-child {
+            margin-top: 0;
+        }
+
+        .burbuja ul, .burbuja ol {
+            margin: 8px 0;
+            padding-left: 22px;
+        }
+
+        .burbuja li {
+            margin: 4px 0;
+        }
+
+        .burbuja p {
+            margin: 6px 0;
+        }
+
+        .burbuja p:first-child { margin-top: 0; }
+        .burbuja p:last-child { margin-bottom: 0; }
+
+        .burbuja strong { font-weight: 600; }
+
+        .burbuja hr {
+            border: none;
+            border-top: 1px solid var(--borde);
+            margin: 12px 0;
+        }
+
+        .burbuja code {
+            background: rgba(0,0,0,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
         }
 
         .orbe-mini {
@@ -414,6 +460,9 @@
     let historial = [];
     let imagenBase64 = null;
 
+    // Configurar marked para que sea seguro
+    marked.setOptions({ breaks: true });
+
     const todasSugerencias = [
         '¿La proteína en polvo hace daño a los riñones?',
         '¿La biotina realmente hace crecer el cabello?',
@@ -574,10 +623,11 @@
 
         if (texto) {
             const p = document.createElement('div');
-            p.innerHTML = texto
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/\n/g, '<br>');
+            if (tipo === 'checkmate') {
+                p.innerHTML = marked.parse(texto);
+            } else {
+                p.textContent = texto;
+            }
             burbuja.appendChild(p);
         }
 
